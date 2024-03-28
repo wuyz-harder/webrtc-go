@@ -9,10 +9,12 @@ type WsClient struct {
 const (
 	Offer              = "offer"
 	Answer             = "answer"
+	HangUp             = "hangup"
 	Candidate          = "candidate"
 	CreateRoom         = "create"
 	JoinRoom           = "join"
 	LeaveRoom          = "leave"
+	TextMessage        = "textMessage"
 	OfferRenegotiation = "offerRenegotiation"
 )
 

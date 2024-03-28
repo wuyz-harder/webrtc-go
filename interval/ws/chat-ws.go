@@ -129,7 +129,6 @@ func listenFromClient(node *RtcNode) {
 		case HEART_BEAT:
 			// 给本人发送pong消息
 			node.DataQueue <- (map[string]interface{}{"type": HEART_BEAT, "msg": "pong"})
-
 			// sdp信息交换，由于webrtc
 		case RTC_SDP:
 			// 给远端发送消息
@@ -141,8 +140,6 @@ func listenFromClient(node *RtcNode) {
 			})
 		case message.Offer:
 			fmt.Println("offer来了！！！")
-			fmt.Println(resMes.To)
-			fmt.Println(resMes.From)
 			rtcClientMap[resMes.To].DataQueue <- (map[string]interface{}{
 				"from": resMes.From,
 				"type": message.Offer,
@@ -158,6 +155,13 @@ func listenFromClient(node *RtcNode) {
 				"to":   resMes.To,
 				"type": message.Answer,
 				"data": resMes.Data,
+			})
+			// 发送消息处理
+		case message.HangUp:
+			fmt.Println("HangUP")
+			rtcClientMap[resMes.To].DataQueue <- (map[string]interface{}{
+				"to":   resMes.To,
+				"type": message.HangUp,
 			})
 			// 发送消息处理
 		case message.Candidate:
@@ -207,6 +211,32 @@ func listenFromClient(node *RtcNode) {
 					"message": "",
 					"msg":     resMes.Data,
 				}
+			}
+		case message.TextMessage:
+			tmpNode, Nerr := rtcClientMap[resMes.To]
+			if !Nerr {
+				// 给发送者回一条消息
+				node.DataQueue <- map[string]interface{}{
+					"type":    GET_MSG,
+					"to":      resMes.To,
+					"message": "发送失败",
+					"from":    0,
+					"msg":     "数据保存失败",
+				}
+			} else {
+				node.DataQueue <- map[string]interface{}{
+					"type": message.TextMessage,
+					"to":   resMes.To,
+					"from": resMes.From,
+					"data": resMes.Data,
+				}
+				tmpNode.DataQueue <- map[string]interface{}{
+					"type": message.TextMessage,
+					"to":   resMes.To,
+					"from": resMes.From,
+					"data": resMes.Data,
+				}
+
 			}
 
 		}
