@@ -132,47 +132,36 @@ func listenFromClient(node *RtcNode) {
 			// sdp信息交换，由于webrtc
 		case RTC_SDP:
 			// 给远端发送消息
-			rtcClientMap[resMes.To].DataQueue <- (map[string]interface{}{
-				"from": resMes.From,
-				"to":   resMes.To,
-				"type": RTC_SDP,
-				"data": resMes.Data,
-			})
+			rtcClientMap[resMes.To].DataQueue <- resMes
 		case message.Offer:
-			fmt.Println("offer来了！！！")
-			rtcClientMap[resMes.To].DataQueue <- (map[string]interface{}{
-				"from": resMes.From,
-				"type": message.Offer,
-				"to":   resMes.To,
-				"data": resMes.Data,
-			})
+			rtcClientMap[resMes.To].DataQueue <- resMes
 
 		case message.Answer:
-			fmt.Println("Answer")
-			fmt.Println(resMes)
-			rtcClientMap[resMes.To].DataQueue <- (map[string]interface{}{
-				"from": resMes.From,
-				"to":   resMes.To,
-				"type": message.Answer,
-				"data": resMes.Data,
-			})
+			rtcClientMap[resMes.To].DataQueue <- resMes
 			// 发送消息处理
 		case message.HangUp:
-			fmt.Println("HangUP")
-			rtcClientMap[resMes.To].DataQueue <- (map[string]interface{}{
-				"to":   resMes.To,
-				"type": message.HangUp,
-			})
+			rtcClientMap[resMes.To].DataQueue <- resMes
 			// 发送消息处理
 		case message.Candidate:
-			fmt.Println("Candidate")
-			fmt.Println(resMes)
-			rtcClientMap[resMes.To].DataQueue <- (map[string]interface{}{
-				"from": resMes.From,
-				"to":   resMes.To,
-				"type": message.Candidate,
-				"data": resMes.Data,
-			})
+			rtcClientMap[resMes.To].DataQueue <- resMes
+		case message.Call:
+			calledNode, neil := rtcClientMap[resMes.To]
+			if !neil {
+				node.DataQueue <- map[string]interface{}{
+					"type":    message.Error,
+					"to":      resMes.To,
+					"message": "发送失败",
+					"from":    resMes.From,
+					"msg":     "该用户未在线",
+				}
+			} else {
+				calledNode.DataQueue <- resMes
+			}
+		case message.Accept:
+
+			rtcClientMap[resMes.To].DataQueue <- resMes
+		case message.Reject:
+			rtcClientMap[resMes.To].DataQueue <- resMes
 
 		case SEND_MSG:
 			// 发送消息给某个用户,判断该用户是否还在
@@ -224,18 +213,8 @@ func listenFromClient(node *RtcNode) {
 					"msg":     "数据保存失败",
 				}
 			} else {
-				node.DataQueue <- map[string]interface{}{
-					"type": message.TextMessage,
-					"to":   resMes.To,
-					"from": resMes.From,
-					"data": resMes.Data,
-				}
-				tmpNode.DataQueue <- map[string]interface{}{
-					"type": message.TextMessage,
-					"to":   resMes.To,
-					"from": resMes.From,
-					"data": resMes.Data,
-				}
+				node.DataQueue <- resMes
+				tmpNode.DataQueue <- resMes
 
 			}
 

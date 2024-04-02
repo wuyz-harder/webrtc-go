@@ -10,12 +10,16 @@ const (
 	Offer              = "offer"
 	Answer             = "answer"
 	HangUp             = "hangup"
+	Call               = "call"
+	Reject             = "reject"
+	Accept             = "accept"
 	Candidate          = "candidate"
 	CreateRoom         = "create"
 	JoinRoom           = "join"
 	LeaveRoom          = "leave"
 	TextMessage        = "textMessage"
 	OfferRenegotiation = "offerRenegotiation"
+	Error              = "error"
 )
 
 // 定义消息结构体
